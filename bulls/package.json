@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "glob": "^7.1.6",
-    "milligram": "^1.4.1",
-    "react-dom": "^17.0.1"
-  }
-}
