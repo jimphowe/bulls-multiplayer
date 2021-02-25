@@ -9,8 +9,9 @@ socket.connect();
 let channel = socket.channel("game:1", {});
 
 let state = {
-  word: "______",
+  view: "",
   guesses: [],
+  players: [],
 };
 
 let callback = null;
@@ -35,7 +36,17 @@ export function ch_login(name) {
          .receive("error", resp => {
            console.log("Unable to login", resp)
          });
+  
 }
+
+export function ch_addUser(user) {
+  channel.push("addUser", user)
+         .receive("ok", state_update)
+         .receive("error", resp => {
+           console.log("Unable to push", resp)
+         });
+}
+
 
 export function ch_push(guess) {
   channel.push("guess", guess)

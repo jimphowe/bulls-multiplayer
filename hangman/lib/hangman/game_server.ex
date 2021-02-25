@@ -33,6 +33,10 @@ defmodule Hangman.GameServer do
     GenServer.call(reg(name), {:reset, name})
   end
 
+  def addUser(name, person) do
+    GenServer.call(reg(name), {:addUser, name, person})
+  end
+
   def guess(name, letter) do
     GenServer.call(reg(name), {:guess, name, letter})
   end
@@ -40,6 +44,8 @@ defmodule Hangman.GameServer do
   def peek(name) do
     GenServer.call(reg(name), {:peek, name})
   end
+
+  
 
   # implementation
 
@@ -54,6 +60,13 @@ defmodule Hangman.GameServer do
     {:reply, game, game}
   end
 
+  def handle_call({:addUser, name, person}, _from, game) do
+    game = Game.addUser(game, person)
+    BackupAgent.put(name, game)
+    {:reply, game, game}
+  end
+
+
   def handle_call({:guess, name, letter}, _from, game) do
     game = Game.guess(game, letter)
     BackupAgent.put(name, game)
@@ -64,6 +77,7 @@ defmodule Hangman.GameServer do
     {:reply, game, game}
   end
 
+  
   def handle_info(:pook, game) do
     game = Game.guess(game, "q")
     HangmanWeb.Endpoint.broadcast!(

@@ -5,63 +5,88 @@ defmodule Hangman.Game do
   def new do
     %{
       secret: random_secret(),
-      guesses: MapSet.new(),
+      view: "",
+      guesses: [],
+      players: MapSet.new(),
     }
   end
+
+  def addUser(st, name) do
+    %{
+      st | players: MapSet.put(st.players, name),
+    }
+  end
+
+  defp updateArr(guess, secret, arr, idx) do
+    if Enum.member?(guess, Enum.at(secret, idx)) do
+       if Enum.at(guess, idx) == Enum.at(secret, idx) do
+         [Enum.at(arr, 0) + 1, Enum.at(arr, 1)]
+       else
+         [Enum.at(arr, 0), Enum.at(arr, 1) + 1]
+       end
+     else
+       arr
+     end
+   end
+ 
+   defp numberOfBullsAndCows(guess, secret, arr, idx) do
+     
+     cond do 
+       idx == Enum.count(secret) -> [Integer.to_string(Enum.at(arr, 0)), Integer.to_string(Enum.at(arr, 1))]
+       true -> numberOfBullsAndCows(guess,
+        secret,
+         updateArr(guess, secret, arr, idx),
+          idx + 1)
+     end
+   end
+ 
+   defp renderView(st, guesses, acc) do
+     
+     if Enum.count(guesses) == 0 do
+       acc
+     else
+       
+       numBC = numberOfBullsAndCows(String.graphemes(Enum.at(guesses, 0)), String.graphemes(st.secret), [0, 0], 0)
+       renderView(st,
+        Enum.slice(guesses, 1, Enum.count(guesses) - 1),
+       acc 
+       <> " " 
+       <> Enum.at(guesses,0) 
+       <> " "
+       <> Enum.at(numBC,0) 
+       <> "B "
+       <> Enum.at(numBC,1) 
+       <> "C"
+       <> "\n")
+     end
+   end
 
   def guess(st, codeGuess) do
-    %{ st | guesses: MapSet.put(st.guesses, cowsAndBulls(st,codeGuess)) }
-  end
-
-  def getBulls(secret, codeGuess, bulls) do
-    if String.length(secret) == 0 do
-      Integer.to_string(bulls)
-    else
-      length = String.length(secret)
-      if String.slice(secret,0,1) == String.slice(codeGuess,0,1) do
-        getBulls(String.slice(secret,1,length), String.slice(codeGuess,1,length), bulls + 1)
-      else
-        getBulls(String.slice(secret,1,length), String.slice(codeGuess,1,length), bulls)
-      end
-    end
-  end
-
-  def getCows(wholeSecret, secret, codeGuess, cows) do
-    if String.length(secret) == 0 do
-      Integer.to_string(cows)
-    else
-      length = String.length(secret)
-      if String.slice(secret,0,1) != String.slice(codeGuess,0,1) and Enum.member?(String.graphemes(wholeSecret),String.slice(codeGuess,0,1)) do
-        getCows(wholeSecret, String.slice(secret,1,length), String.slice(codeGuess,1,length), cows + 1)
-      else
-        getCows(wholeSecret, String.slice(secret,1,length), String.slice(codeGuess,1,length), cows)
-      end
-    end
-  end
-
-  # Returns a string representing the number of bulls and cows from the current guess
-  def cowsAndBulls(st, codeGuess) do
-    codeGuess <> " " <> getBulls(st.secret, codeGuess, 0) <> "B" <> getCows(st.secret, st.secret, codeGuess, 0) <> "C"
-  end
-
-  def view(st, name) do
-    word = st.secret
-           |> String.graphemes
-           |> Enum.map(fn xx ->
-      if MapSet.member?(st.guesses, xx) do
-        xx
-      else
-        "_"
-      end
-    end)
-           |> Enum.join("")
+    
+    guesses = st.guesses ++ [codeGuess]
+    view = renderView(st, guesses, "")
+    
 
     %{
-      word: word,
-      guesses: MapSet.to_list(st.guesses),
-      name: name,
+      secret: st.secret,
+      view: view,
+      guesses: guesses,
+      players: st.players,
     }
   end
+  
+
+  def view(st, name) do
+    %{
+      view: st.view,
+      guesses: st.guesses,
+      name: name,
+      players: MapSet.to_list(st.players)
+    }
+  end
+
+
+
 
   def build_secret(secret) do
     if String.length(secret) == 4 do
@@ -80,4 +105,3 @@ defmodule Hangman.Game do
     build_secret("")
   end
 end
-

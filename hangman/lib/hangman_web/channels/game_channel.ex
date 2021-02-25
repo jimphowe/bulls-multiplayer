@@ -29,6 +29,16 @@ defmodule HangmanWeb.GameChannel do
   end
 
   @impl true
+  def handle_in("addUser", %{"name" => person}, socket) do
+    user = socket.assigns[:user]
+    view = socket.assigns[:name]
+    |> GameServer.addUser(person)
+    |> Game.view(user)
+    broadcast(socket, "view", view)
+    {:reply, {:ok, view}, socket}
+  end
+
+  @impl true
   def handle_in("guess", %{"letter" => ll}, socket) do
     user = socket.assigns[:user]
     view = socket.assigns[:name]
