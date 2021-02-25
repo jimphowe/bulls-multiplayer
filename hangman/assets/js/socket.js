@@ -9,7 +9,7 @@ socket.connect();
 let channel = socket.channel("game:1", {});
 
 let state = {
-  view: "",
+  view: [],
   guesses: [],
   players: [],
 };
@@ -25,9 +25,10 @@ function state_update(st) {
   }
 }
 
-export function ch_join(cb) {
+export function ch_join(cb, name) {
   callback = cb;
   callback(state);
+  //channel = socket.channel("game:" + name, {});
 }
 
 export function ch_login(name) {

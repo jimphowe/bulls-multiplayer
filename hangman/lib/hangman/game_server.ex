@@ -55,7 +55,7 @@ defmodule Hangman.GameServer do
   end
 
   def handle_call({:reset, name}, _from, game) do
-    game = Game.new
+    game = Game.reset(game)
     BackupAgent.put(name, game)
     {:reply, game, game}
   end

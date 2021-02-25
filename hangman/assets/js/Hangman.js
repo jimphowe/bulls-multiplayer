@@ -130,7 +130,7 @@ function Play({state}) {
         </div>
         <div className="row">
           <div className="output">
-            <p>Guesses: {"\n" + view}</p>
+            <p>Guesses: {"\n" + view.join("\n")}</p>
           </div>
           
         </div>
@@ -167,14 +167,14 @@ function Hangman() {
   // render function,
   // should be pure except setState
   const [state, setState] = useState({
-    view: "",
+    view: [],
     name: "",
     guesses: [],
     players: [],
   });
 
   useEffect(() => {
-    ch_join(setState);
+    ch_join(setState, "1");
   });
 
   let body = null;

@@ -5,7 +5,7 @@ defmodule Hangman.Game do
   def new do
     %{
       secret: random_secret(),
-      view: "",
+      view: [],
       guesses: %{},
       players: MapSet.new(),
     }
@@ -16,7 +16,7 @@ defmodule Hangman.Game do
     IO.puts name
     %{
       secret: st.secret,
-      view: "",
+      view: [],
       guesses: Map.put(st.guesses, name, []),
       players: MapSet.put(st.players, name),
     }
@@ -82,19 +82,39 @@ defmodule Hangman.Game do
       players: st.players,
     }
   end
+
   
+  def reset(st) do
+
+    guesses = Map.new(st.guesses, fn {k, v} -> {k, []} end)
+
+    %{
+      secret: random_secret(),
+      view: [],
+      guesses: guesses,
+      players: st.players,
+    }
+
+  end
 
   def view(st, name) do
     
-    view = "didThisHappen"
-    view = if Map.has_key?(st.guesses, name) do
-      IO.puts name
-      IO.puts "gotintotheif!"
-      IO.puts "ted attempted to render:"
-      IO.puts Map.get(st.guesses, name)
-      renderView(st, Map.get(st.guesses, name), "")
-    end
+    # view = []
+    # apple = ""
+    # apple = if Map.has_key?(st.guesses, "ted") do
+    #   IO.puts name
+    #   IO.puts "gotintotheif!"
+    #   IO.puts "ted attempted to render:"
+    #   IO.puts Map.get(st.guesses, name)
+    #   renderView(st, Map.get(st.guesses, "ted"), "")
+    # end
+    # view = view ++ [apple]
 
+    view = Enum.map(st.guesses, fn({k, v}) -> (k <> "\n" <> renderView(st, v, "")) end)
+
+
+    # values = Map.values(st.guesses)
+    # view = Enum.map(values, fn(x) -> renderView(st, x, "") end)
 
     %{
       view: view,
