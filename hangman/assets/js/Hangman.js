@@ -7,11 +7,7 @@ import { ch_join, ch_push,
   ch_login, ch_reset, ch_addUser } from './socket';
 
 function GameOver(props) {
-  //let reset = props['reset'];
   let {reset} = props;
-
-  // On GameOver screen,
-  // set page title to "Game Over!"
 
   return (
       <div className="row">
@@ -177,18 +173,68 @@ function Hangman() {
     ch_join(setState, "1");
   });
 
+  function GameWon(props) {
+    let winner = "";
+    let guesses = 0;
+    for (let i = 0; i < state["view"].length; i++) {
+          if (state["view"][i].includes("4B")) {
+              winner = state["view"][i].split(/\r?\n/)[0];
+          }
+    }
+      for (const [key, value] of Object.entries(state["guesses"])) {
+          if (key === winner) {
+              guesses = value.length;
+          }
+      }
+    let {reset} = props;
+      return (
+        <div className="row">
+          <div className="column">
+            <h1>{winner} won in {guesses} guesses!</h1>
+            <p>
+            <button onClick={reset}>
+                            Reset
+            </button>
+            </p>
+          </div>
+        </div>
+      );
+  }
+
+  function gameIsWon() {
+      for (let i = 0; i < state["view"].length; i++) {
+          if (state["view"][i].includes("4B")) {
+              return true;
+          }
+      }
+      return false;
+  }
+
+  function gameIsLost() {
+      for (const [_, value] of Object.entries(state["guesses"])) {
+          if (value.length > 7) {
+              return true;
+          }
+      }
+      return false;
+  }
+
   let body = null;
 
   if (state.name === "") {
     body = <Login />;
   }
-  // FIXME: Correct guesses shouldn't count.
-  //state.guesses.length < 8)
-  else if (1 == 1) {
-    body = <Play state={state} />;
+  //game is won if anyone has the right answer
+  else if (gameIsWon()) {
+      body = <GameWon reset={reset} />;
+  }
+  // game is lost if anyone has used 8 guesses and no one has won
+  else if (gameIsLost()) {
+      body = <GameOver reset={reset} />;
   }
   else {
-    body = <GameOver reset={reset} />;
+    console.log(state["view"]);
+    body = <Play state={state} />;
   }
 
   return (
