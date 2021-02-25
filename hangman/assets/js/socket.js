@@ -48,8 +48,8 @@ export function ch_addUser(user) {
 }
 
 
-export function ch_push(guess) {
-  channel.push("guess", guess)
+export function ch_push(guess, name) {
+  channel.push("guess", guess, name)
          .receive("ok", state_update)
          .receive("error", resp => {
            console.log("Unable to push", resp)

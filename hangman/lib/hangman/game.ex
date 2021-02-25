@@ -6,14 +6,19 @@ defmodule Hangman.Game do
     %{
       secret: random_secret(),
       view: "",
-      guesses: [],
+      guesses: %{},
       players: MapSet.new(),
     }
   end
 
   def addUser(st, name) do
+    IO.puts "addUser:"
+    IO.puts name
     %{
-      st | players: MapSet.put(st.players, name),
+      secret: st.secret,
+      view: "",
+      guesses: Map.put(st.guesses, name, []),
+      players: MapSet.put(st.players, name),
     }
   end
 
@@ -61,15 +66,18 @@ defmodule Hangman.Game do
      end
    end
 
-  def guess(st, codeGuess) do
+  def guess(st, codeGuess, name) do
     
-    guesses = st.guesses ++ [codeGuess]
-    view = renderView(st, guesses, "")
+    persons_new_guesses = (Map.get(st.guesses, name) ++ [codeGuess])
+    
+    guesses = Map.put(st.guesses, name, persons_new_guesses)
+    #guesses = st.guesses ++ [codeGuess]
+    
     
 
     %{
       secret: st.secret,
-      view: view,
+      view: st.view,
       guesses: guesses,
       players: st.players,
     }
@@ -77,8 +85,19 @@ defmodule Hangman.Game do
   
 
   def view(st, name) do
+    
+    view = "didThisHappen"
+    view = if Map.has_key?(st.guesses, name) do
+      IO.puts name
+      IO.puts "gotintotheif!"
+      IO.puts "ted attempted to render:"
+      IO.puts Map.get(st.guesses, name)
+      renderView(st, Map.get(st.guesses, name), "")
+    end
+
+
     %{
-      view: st.view,
+      view: view,
       guesses: st.guesses,
       name: name,
       players: MapSet.to_list(st.players)

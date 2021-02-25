@@ -104,7 +104,7 @@ function Play({state}) {
   function guess(text) {
     // Inner function isn't a render function
       if (validGuess(text)) {
-          ch_push({letter: text});
+          ch_push({letter: text, username: name});
       }
         else {
             alert("bad guess");
@@ -183,7 +183,8 @@ function Hangman() {
     body = <Login />;
   }
   // FIXME: Correct guesses shouldn't count.
-  else if (state.guesses.length < 8) {
+  //state.guesses.length < 8)
+  else if (1 == 1) {
     body = <Play state={state} />;
   }
   else {

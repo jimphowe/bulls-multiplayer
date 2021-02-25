@@ -39,10 +39,11 @@ defmodule HangmanWeb.GameChannel do
   end
 
   @impl true
-  def handle_in("guess", %{"letter" => ll}, socket) do
+  def handle_in("guess", %{"letter" => ll, "username" => nn }, socket) do
     user = socket.assigns[:user]
+    IO.puts user
     view = socket.assigns[:name]
-    |> GameServer.guess(ll)
+    |> GameServer.guess(ll, nn)
     |> Game.view(user)
     broadcast(socket, "view", view)
     {:reply, {:ok, view}, socket}
