@@ -1,12 +1,8 @@
 import {Socket} from "phoenix";
 
-let socket = new Socket(
-  "/socket",
-  {params: {token: ""}}
-);
-socket.connect();
 
-let channel = socket.channel("game:1", {});
+let channel = null;
+//let channel = socket.channel("game:1", {});
 
 let state = {
   observers: [],
@@ -14,6 +10,7 @@ let state = {
   game_started: false,
   view: [],
   winLoss: [],
+  name: "",
   // view: [],
   // guesses: [],
   // players: [],
@@ -38,7 +35,24 @@ export function ch_join(cb, name) {
   //channel = socket.channel("game:" + name, {});
 }
 
-export function ch_login(name) {
+export function ch_login(name, roomName) {
+
+  let socket = new Socket(
+    "/socket",
+    {params: {token: ""}}
+  );
+  socket.connect();
+
+  channel = socket.channel("game:" + roomName, {});
+
+  channel.join()
+       .receive("ok", state_update)
+       .receive("error", resp => {
+         console.log("Unable to join", resp)
+       });
+
+  channel.on("view", state_update);
+
   channel.push("login", {name: name})
          .receive("ok", state_update)
          .receive("error", resp => {
@@ -104,10 +118,6 @@ export function ch_reset() {
          });
 }
 
-channel.join()
-       .receive("ok", state_update)
-       .receive("error", resp => {
-         console.log("Unable to join", resp)
-       });
 
-channel.on("view", state_update);
+
+

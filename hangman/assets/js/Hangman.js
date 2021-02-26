@@ -207,8 +207,8 @@ function TheGame({state}) {
       );
 }
 
-function Go(name) {
-  ch_login(name);
+function Go(name, roomName) {
+  ch_login(name, roomName);
   ch_addUser({name: name});
 }
 
@@ -224,7 +224,10 @@ function Login() {
                  onChange={(ev) => setName(ev.target.value)} />
         </div>
         <div className="column">
-          <button onClick={() => Go(name)}>
+          <input type="text" id="roomName"/>
+        </div>
+        <div className="column">
+          <button onClick={() => Go(name, document.getElementById("roomName").value)}>
             Login
           </button>
         </div>
