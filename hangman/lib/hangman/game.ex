@@ -5,13 +5,15 @@ defmodule Hangman.Game do
 
   def new do
     %{
-      secret: random_secret(),
+      secret: "1234",
       observers: MapSet.new(),
       players: MapSet.new(),
       players_ready: %{},
 
       guesses: %{},
       current_guesses: %{},
+
+      winLoss: %{},
 
       game_started: false,
 
@@ -44,8 +46,11 @@ defmodule Hangman.Game do
       guesses: st.guesses,
       current_guesses: st.current_guesses,
 
+      winLoss: Map.put(st.winLoss, name, %{:win => 0, :loss => 0}),
+
       game_started: st.game_started,
 
+      
 
       view: st.view,
       
@@ -55,7 +60,7 @@ defmodule Hangman.Game do
       # players: MapSet.put(st.players, name),
       # guesses: Map.put(st.guesses, name, []),
 
-      # winLoss: Map.put(st.winLoss, name, %{:win => 0, :loss => 0}),
+      
 
       # lastWiners: st.lastWiners,
     }
@@ -78,6 +83,8 @@ defmodule Hangman.Game do
 
       guesses: guesses,
       current_guesses: current_guesses,
+
+      winLoss: st.winLoss,
 
       game_started: st.game_started,
 
@@ -103,6 +110,8 @@ defmodule Hangman.Game do
       guesses: guesses,
       current_guesses: current_guesses,
 
+      winLoss: st.winLoss,
+
       game_started: st.game_started,
 
       view: st.view,
@@ -126,6 +135,8 @@ defmodule Hangman.Game do
       guesses: st.guesses,
       current_guesses: st.current_guesses,
 
+      winLoss: st.winLoss,
+
       game_started: game_started,
 
       view: st.view,
@@ -145,6 +156,8 @@ defmodule Hangman.Game do
 
       guesses: st.guesses,
       current_guesses: st.current_guesses,
+
+      winLoss: st.winLoss,
 
       game_started: st.game_started,
 
@@ -208,31 +221,107 @@ defmodule Hangman.Game do
     result
   end
 
+  defp updateWins(key, value, current_guesses, secret) do
+    if Map.has_key?(current_guesses, key) do
+      if (Map.get(current_guesses, key) == secret) do
+        %{:win => Map.get(value, :win) + 1, :loss => Map.get(value, :loss)}
+      else
+        %{:win => Map.get(value, :win), :loss => Map.get(value, :loss) + 1}
+      end
+    else
+      value
+    end
+  end
+
+
   def guess(st, codeGuess, name) do
     
-    persons_new_guesses = (Map.get(st.guesses, name) ++ [codeGuess])
+    # persons_new_guesses = (Map.get(st.guesses, name) ++ [codeGuess])
     
-    guesses = Map.put(st.guesses, name, persons_new_guesses)
+    # guesses = Map.put(st.guesses, name, persons_new_guesses)
 
 
     
-    # guesses = st.guesses
+    guesses = st.guesses
     current_guesses = Map.put(st.current_guesses, name, codeGuess)
 
     has_guess_list = Enum.map(current_guesses, fn({k, v}) -> notEmptyString(v) end)
     
     flag = Enum.all?(has_guess_list)
 
-    if flag do
-      # Map.new(current_guesses, fn {k, v} -> {k, (Map.get(st.guesses, k) ++ [v])} end)
-      # st.guesses
-      IO.puts "Got into the flag"
-    end
+    length_of_guesses = Enum.count(Map.get(guesses, name))
+    
+    guesses = 
+      if flag do
+        
+        Map.new(current_guesses, fn {k, v} -> {k, (Map.get(st.guesses, k) ++ [v])} end)
+      else 
+          guesses
+      end
+    
 
-    # current_guesses = if Enum.all?(Map.values(current_guesses), fn(v) -> v != "" end) do
-    #   # Map.new(current_guesses, fn {k, v} -> {k, ""} end)
-    #   current_guesses
-    # end
+     
+    
+
+      guesses_Processed = 
+        if (Enum.count(Map.get(guesses, name)) == (length_of_guesses + 1)) do
+          true
+        else
+          false
+        end
+
+      secret_Found = 
+        if (guesses_Processed) do
+          Enum.any?(Map.values(current_guesses), fn(s) -> s == st.secret end)
+        else
+          false
+        end
+
+      
+
+      
+      secret = 
+        if (secret_Found) do
+          random_secret()
+        else
+          st.secret
+        end
+      
+      players_ready = 
+        if (secret_Found) do
+          Map.new(st.players_ready, fn {k, v} -> {k, false} end)
+        else
+          st.players_ready
+        end
+
+      game_started = 
+        if (secret_Found) do
+          false
+        else
+          true
+        end
+      guesses =
+        if (secret_Found) do
+          Map.new(guesses, fn {k, v} -> {k, []} end)
+        else
+          guesses
+        end
+
+      winLoss = 
+        if (secret_Found) do
+          Map.new(st.winLoss, fn {k, v} -> {k, updateWins(k, v, current_guesses, st.secret)} end)
+        else
+          st.winLoss
+        end
+
+      current_guesses = 
+        if flag do
+          Map.new(current_guesses, fn {k, v} -> {k, ""} end)
+        else 
+          current_guesses
+        end
+
+   
 
     
 
@@ -240,12 +329,14 @@ defmodule Hangman.Game do
       secret: st.secret,
       observers: st.observers,
       players: st.players,
-      players_ready: st.players_ready,
+      players_ready: players_ready,
 
       guesses: guesses,
       current_guesses: current_guesses,
 
-      game_started: st.game_started,
+      winLoss: winLoss,
+
+      game_started: game_started,
 
       view: st.view,
       
@@ -277,6 +368,8 @@ defmodule Hangman.Game do
 
       guesses: st.guesses,
       current_guesses: st.current_guesses,
+
+      winLoss: st.winLoss,
 
       game_started: st.game_started,
 
@@ -311,8 +404,8 @@ defmodule Hangman.Game do
     # view = Enum.map(st.guesses, fn({k, v}) -> (k <> "\n" <> renderView(st, v, "")) end)
 
 
-    # winLoss = Enum.map(st.winLoss, fn({k, v}) -> (k <> ": " <> Integer.to_string(Map.get(v, :win)) <> "W " <> Integer.to_string(Map.get(v, :loss)) <> "L") end)
-    #winLoss = []
+    winLoss = Enum.map(st.winLoss, fn({k, v}) -> (k <> ": " <> Integer.to_string(Map.get(v, :win)) <> "W " <> Integer.to_string(Map.get(v, :loss)) <> "L") end)
+    
     values = Map.values(st.guesses)
     
 
@@ -327,6 +420,8 @@ defmodule Hangman.Game do
       guesses: st.guesses,
       current_guesses: st.current_guesses,
 
+      winLoss: winLoss,
+
       game_started: st.game_started,
 
       view: view,
@@ -337,7 +432,7 @@ defmodule Hangman.Game do
       name: name,
       # players: MapSet.to_list(st.players),
 
-      # winLoss: winLoss,
+      
       # lastWiners: st.lastWiners,
 
     }

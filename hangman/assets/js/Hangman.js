@@ -147,7 +147,7 @@ function notReady(name) {
 }
 
 function TheGame({state}) {
-  let {name, observers, players, game_started, view} = state;
+  let {name, observers, players, game_started, view, winLoss} = state;
 
   const [text, setText] = useState("");
 
@@ -183,7 +183,13 @@ function TheGame({state}) {
         <Controls reset={reset} guess={guess} />
       </div>
       <div className = "row">
-        <p>{view.join("\n")}</p>
+        <div className = "column">
+          <p>{view.join("\n")}</p>
+        </div>
+        <div className = "column">
+          <p>{winLoss.join("\n")}</p>
+        </div>
+        
       </div>
     </div>
   );
@@ -225,6 +231,7 @@ function Hangman() {
     players: [],
     game_started: false,
     view: [],
+    winLoss: [],
     
     // view: [],
     // name: "",

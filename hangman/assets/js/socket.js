@@ -13,10 +13,11 @@ let state = {
   players: [],
   game_started: false,
   view: [],
+  winLoss: [],
   // view: [],
   // guesses: [],
   // players: [],
-  // winLoss: [],
+  
   // lastWinners: [],
 };
 
