@@ -39,6 +39,46 @@ defmodule HangmanWeb.GameChannel do
   end
 
   @impl true
+  def handle_in("observer", %{"user" => person}, socket) do
+    user = socket.assigns[:user]
+    view = socket.assigns[:name]
+    |> GameServer.switchToObserver(person)
+    |> Game.view(user)
+    broadcast(socket, "view", view)
+    {:reply, {:ok, view}, socket}
+  end
+
+  @impl true
+  def handle_in("player", %{"user" => person}, socket) do
+    user = socket.assigns[:user]
+    view = socket.assigns[:name]
+    |> GameServer.switchToPlayer(person)
+    |> Game.view(user)
+    broadcast(socket, "view", view)
+    {:reply, {:ok, view}, socket}
+  end
+
+  @impl true
+  def handle_in("ready", %{"user" => person}, socket) do
+    user = socket.assigns[:user]
+    view = socket.assigns[:name]
+    |> GameServer.ready(person)
+    |> Game.view(user)
+    broadcast(socket, "view", view)
+    {:reply, {:ok, view}, socket}
+  end
+
+  @impl true
+  def handle_in("notReady", %{"user" => person}, socket) do
+    user = socket.assigns[:user]
+    view = socket.assigns[:name]
+    |> GameServer.notReady(person)
+    |> Game.view(user)
+    broadcast(socket, "view", view)
+    {:reply, {:ok, view}, socket}
+  end
+
+  @impl true
   def handle_in("guess", %{"letter" => ll, "username" => nn }, socket) do
     user = socket.assigns[:user]
     IO.puts user

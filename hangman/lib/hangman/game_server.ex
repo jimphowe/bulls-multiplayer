@@ -37,6 +37,22 @@ defmodule Hangman.GameServer do
     GenServer.call(reg(name), {:addUser, name, person})
   end
 
+  def switchToObserver(name, person) do
+    GenServer.call(reg(name), {:observer, name, person})
+  end
+
+  def switchToPlayer(name, person) do
+    GenServer.call(reg(name), {:player, name, person})
+  end
+
+  def ready(name, person) do
+    GenServer.call(reg(name), {:ready, name, person})
+  end
+
+  def notReady(name, person) do
+    GenServer.call(reg(name), {:notReady, name, person})
+  end
+
   def guess(name, letter, nn) do
     GenServer.call(reg(name), {:guess, name, letter, nn})
   end
@@ -62,6 +78,30 @@ defmodule Hangman.GameServer do
 
   def handle_call({:addUser, name, person}, _from, game) do
     game = Game.addUser(game, person)
+    BackupAgent.put(name, game)
+    {:reply, game, game}
+  end
+
+  def handle_call({:observer, name, person}, _from, game) do
+    game = Game.addObserver(game, person)
+    BackupAgent.put(name, game)
+    {:reply, game, game}
+  end
+
+  def handle_call({:player, name, person}, _from, game) do
+    game = Game.addPlayer(game, person)
+    BackupAgent.put(name, game)
+    {:reply, game, game}
+  end
+
+  def handle_call({:ready, name, person}, _from, game) do
+    game = Game.ready(game, person)
+    BackupAgent.put(name, game)
+    {:reply, game, game}
+  end
+
+  def handle_call({:notReady, name, person}, _from, game) do
+    game = Game.notReady(game, person)
     BackupAgent.put(name, game)
     {:reply, game, game}
   end

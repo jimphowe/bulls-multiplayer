@@ -4,7 +4,7 @@ import 'milligram';
 import "../css/bulls.css"
 
 import { ch_join, ch_push,
-  ch_login, ch_reset, ch_addUser } from './socket';
+  ch_login, ch_reset, ch_addUser, ch_observer, ch_player, ch_ready, ch_notReady } from './socket';
 
 function GameOver(props) {
   let {reset} = props;
@@ -71,31 +71,85 @@ function Controls({guess, reset}) {
 
 function reset() {
   console.log("Time to reset");
-  ch_reset();
+  // ch_reset();
 }
 
-function Play({state}) {
-  let {view, guesses, name, players} = state;
+// function Play({state}) {
+//   let {view, guesses, name, players, winLoss} = state;
 
-    function validGuess(guess) {
-        let nums = /^[0-9]+$/;
-        let guessSet = new Set();
-        if (guess.length !== 4) {
-            return false;
-        }
-        if (!guess.match(nums)) {
-            return false;
-        }
-        for (let i = 0; i < guess.length; i++) {
-            if (guessSet.has(guess[i])) {
-                return false;
-            }
-            else {
-                guessSet.add(guess[i]);
-            }
-        }
-        return true;
+function validGuess(guess) {
+    let nums = /^[0-9]+$/;
+    let guessSet = new Set();
+    if (guess.length !== 4) {
+        return false;
     }
+    if (!guess.match(nums)) {
+        return false;
+    }
+    for (let i = 0; i < guess.length; i++) {
+        if (guessSet.has(guess[i])) {
+            return false;
+        }
+        else {
+            guessSet.add(guess[i]);
+        }
+    }
+    return true;
+}
+
+
+
+  
+
+//   // FIXME: Correct guesses shouldn't count.
+//   let lives = 8 - guesses.length;
+
+//   return (
+//       <div>
+//         <Controls reset={reset} guess={guess} />
+//         <div>
+//           <p>Players: {players.join(", ")}</p>
+//         </div>
+//         <div className="row">
+          
+//           <div className="column">
+//             <p>Name: {name}</p>
+//           </div>
+//         </div>
+//         <div className="row">
+//           <div className="output">
+//             <p>Guesses: {"\n" + view.join("\n")}</p>
+//             <p>Wins Losses: {"\n" + winLoss}</p>
+//           </div>
+          
+//         </div>
+       
+//       </div>
+//   );
+// }
+
+//Switch User to Observer
+function switchToObserver(name) {
+  ch_observer({user: name});
+}
+
+//Switch User To Player
+function switchToPlayer(name) {
+  ch_player({user: name});
+}
+
+function ready(name) {
+  ch_ready({user: name});
+}
+
+function notReady(name) {
+  ch_notReady({user: name});
+}
+
+function TheGame({state}) {
+  let {name, observers, players, game_started, view} = state;
+
+  const [text, setText] = useState("");
 
   function guess(text) {
     // Inner function isn't a render function
@@ -107,32 +161,33 @@ function Play({state}) {
       }
   }
 
-  
-
-  // FIXME: Correct guesses shouldn't count.
-  let lives = 8 - guesses.length;
-
   return (
-      <div>
-        <Controls reset={reset} guess={guess} />
-        <div>
+    <div>
+      <div className = "row">
+        <div className = "column">
+          <p>Your Name: {name}</p>
+          <p>Observers: {observers.join(" ")}</p>
           <p>Players: {players.join(", ")}</p>
+          <p>GameStarted: {game_started.toString()}</p>
         </div>
-        <div className="row">
-          
-          <div className="column">
-            <p>Name: {name}</p>
-          </div>
+        <div className = "column">
+          <button onClick={() => ready(name)}>Ready</button>
+          <button onClick={() => notReady(name)}>Not Ready</button>
         </div>
-        <div className="row">
-          <div className="output">
-            <p>Guesses: {"\n" + view.join("\n")}</p>
-          </div>
-          
+        <div className = "column">
+          <button onClick={() => switchToObserver(name)}>Observer</button>
+          <button onClick={() => switchToPlayer(name)}>Player</button>
         </div>
-       
       </div>
+      <div className = "row">
+        <Controls reset={reset} guess={guess} />
+      </div>
+      <div className = "row">
+        <p>{view.join("\n")}</p>
+      </div>
+    </div>
   );
+
 }
 
 function Go(name) {
@@ -141,6 +196,7 @@ function Go(name) {
 }
 
 function Login() {
+  
   const [name, setName] = useState("");
 
   return (
@@ -162,62 +218,71 @@ function Login() {
 function Hangman() {
   // render function,
   // should be pure except setState
+
   const [state, setState] = useState({
-    view: [],
     name: "",
-    guesses: [],
+    observers: [],
     players: [],
+    game_started: false,
+    view: [],
+    
+    // view: [],
+    // name: "",
+    // guesses: [],
+    // players: [],
+    // winLoss: [],
+    // lastWinners: [],
   });
 
   useEffect(() => {
     ch_join(setState, "1");
   });
 
-  function GameWon(props) {
-    let winner = "";
-    let guesses = 0;
-    for (let i = 0; i < state["view"].length; i++) {
-          if (state["view"][i].includes("4B")) {
-              winner = state["view"][i].split(/\r?\n/)[0];
-          }
-    }
-      for (const [key, value] of Object.entries(state["guesses"])) {
-          if (key === winner) {
-              guesses = value.length;
-          }
-      }
-    let {reset} = props;
-      return (
-        <div className="row">
-          <div className="column">
-            <h1>{winner} won in {guesses} guesses!</h1>
-            <p>
-            <button onClick={reset}>
-                            Reset
-            </button>
-            </p>
-          </div>
-        </div>
-      );
-  }
+  // function GameWon(props) {
+  //   let winner = "";
+  //   let guesses = 0;
+  //   for (let i = 0; i < state["view"].length; i++) {
+  //         if (state["view"][i].includes("4B")) {
+  //             winner = state["view"][i].split(/\r?\n/)[0];
+  //         }
+  //   }
+  //     for (const [key, value] of Object.entries(state["guesses"])) {
+  //         if (key === winner) {
+  //             guesses = value.length;
+  //         }
+  //     }
+  //   let {reset} = props;
+  //     return (
+  //       <div className="row">
+  //         <div className="column">
+  //           <h1>{winner} won in {guesses} guesses!</h1>
+  //           <p>
+  //           <button onClick={reset}>
+  //                           Reset
+  //           </button>
+  //           </p>
+  //         </div>
+  //       </div>
+  //     );
+  // }
 
-  function gameIsWon() {
-      for (let i = 0; i < state["view"].length; i++) {
-          if (state["view"][i].includes("4B")) {
-              return true;
-          }
-      }
-      return false;
-  }
+  // function gameIsWon() {
+  //     for (let i = 0; i < state["view"].length; i++) {
+  //         if (state["view"][i].includes("4B")) {
+  //             return true;
+  //         }
+  //     }
+  //     return false;
+  // }
 
-  function gameIsLost() {
-      for (const [_, value] of Object.entries(state["guesses"])) {
-          if (value.length > 7) {
-              return true;
-          }
-      }
-      return false;
-  }
+  // function gameIsLost() {
+  //     for (const [_, value] of Object.entries(state["guesses"])) {
+  //         if (value.length > 7) {
+  //             return true;
+  //         }
+  //     }
+  //     return false;
+  // }
 
   let body = null;
 
@@ -225,16 +290,20 @@ function Hangman() {
     body = <Login />;
   }
   //game is won if anyone has the right answer
-  else if (gameIsWon()) {
-      body = <GameWon reset={reset} />;
-  }
+  // else if (gameIsWon()) {
+  //     body = <GameWon reset={reset} />;
+  // }
   // game is lost if anyone has used 8 guesses and no one has won
-  else if (gameIsLost()) {
-      body = <GameOver reset={reset} />;
-  }
+  // else if (gameIsLost()) {
+  //     body = <GameOver reset={reset} />;
+  // }
+  // else {
+  //   console.log(state["view"]);
+  //   body = <Play state={state} />;
+  // }
   else {
     console.log(state["view"]);
-    body = <Play state={state} />;
+    body = <TheGame state={state} />;
   }
 
   return (
