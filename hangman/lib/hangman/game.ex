@@ -358,22 +358,21 @@ defmodule Hangman.Game do
   
   def reset(st) do
 
-    #guesses = Map.new(st.guesses, fn {k, v} -> {k, []} end)
-
     %{
-      secret: random_secret(),
-      observers: st.observers,
-      players: st.players,
-      players_ready: st.players_ready,
+      secret: "1234",
+      observers: MapSet.union(st.observers,st.players),
+      players: MapSet.new(),
+      players_ready: %{},
 
-      guesses: st.guesses,
-      current_guesses: st.current_guesses,
+      guesses: %{},
+      current_guesses: %{},
 
-      winLoss: st.winLoss,
+      winLoss: %{},
 
-      game_started: st.game_started,
+      game_started: false,
 
-      view: st.view,
+
+      view: "",
 
       
       # secret: random_secret(),

@@ -70,8 +70,7 @@ function Controls({guess, reset}) {
 }
 
 function reset() {
-  console.log("Time to reset");
-  // ch_reset();
+  ch_reset();
 }
 
 // function Play({state}) {
@@ -96,37 +95,6 @@ function validGuess(guess) {
     }
     return true;
 }
-
-
-
-  
-
-//   // FIXME: Correct guesses shouldn't count.
-//   let lives = 8 - guesses.length;
-
-//   return (
-//       <div>
-//         <Controls reset={reset} guess={guess} />
-//         <div>
-//           <p>Players: {players.join(", ")}</p>
-//         </div>
-//         <div className="row">
-          
-//           <div className="column">
-//             <p>Name: {name}</p>
-//           </div>
-//         </div>
-//         <div className="row">
-//           <div className="output">
-//             <p>Guesses: {"\n" + view.join("\n")}</p>
-//             <p>Wins Losses: {"\n" + winLoss}</p>
-//           </div>
-          
-//         </div>
-       
-//       </div>
-//   );
-// }
 
 //Switch User to Observer
 function switchToObserver(name) {
@@ -161,39 +129,82 @@ function TheGame({state}) {
       }
   }
 
-  return (
-    <div>
-      <div className = "row">
-        <div className = "column">
-          <p>Your Name: {name}</p>
-          <p>Observers: {observers.join(" ")}</p>
-          <p>Players: {players.join(", ")}</p>
-          <p>GameStarted: {game_started.toString()}</p>
-        </div>
-        <div className = "column">
-          <button onClick={() => ready(name)}>Ready</button>
-          <button onClick={() => notReady(name)}>Not Ready</button>
-        </div>
-        <div className = "column">
-          <button onClick={() => switchToObserver(name)}>Observer</button>
-          <button onClick={() => switchToPlayer(name)}>Player</button>
-        </div>
-      </div>
-      <div className = "row">
-        <Controls reset={reset} guess={guess} />
-      </div>
-      <div className = "row">
-        <div className = "column">
-          <p>{view.join("\n")}</p>
-        </div>
-        <div className = "column">
-          <p>{winLoss.join("\n")}</p>
-        </div>
-        
-      </div>
-    </div>
-  );
+    function GameButtons({reset,guess,name,players,game_started}) {
+      if (game_started && players.includes(name)) {
+          return (
+              <div className = "row">
+                  <Controls reset={reset} guess={guess} />
+              </div>
+          );
+      }
+      else {
+          return (
+              <div></div>
+          );
+      }
+    }
 
+    function ReadyButtons({name,players}) {
+      if (players.includes(name)) {
+          return (
+              <div className = "column">
+                  <button onClick={() => ready(name)}>Ready</button>
+                  <button onClick={() => notReady(name)}>Not Ready</button>
+              </div>
+          );
+      }
+      else {
+          return (
+              <div></div>
+          );
+      }
+    }
+
+    function PlayerObserverButtons({name,game_started}) {
+        if (!game_started) {
+            return (
+                <div className = "column">
+                    <button onClick={() => switchToObserver(name)}>Observer</button>
+                    <button onClick={() => switchToPlayer(name)}>Player</button>
+                </div>
+            );
+        }
+        else {
+            return (
+                <div></div>
+            );
+        }
+    }
+
+      return (
+          <div>
+              <div className = "row">
+                  <div className = "column">
+                      <p className="box">Your Name: {name}</p>
+                      <p className="box">Observers: {observers.join(" ")}</p>
+                      <p className="box">Players: {players.join(", ")}</p>
+                      <p className="box">GameStarted: {game_started.toString()}</p>
+                  </div>
+                  <div className = "column">
+                      <ReadyButtons players={players} name={name} />
+                  </div>
+                  <div className = "column">
+                      <PlayerObserverButtons name={name} game_started={game_started} />
+                  </div>
+              </div>
+              <div className = "row">
+                  <GameButtons reset={reset} guess={guess} name={name} players={players} game_started={game_started} />
+              </div>
+              <div className = "row">
+                  <div className = "column">
+                      <p>{view.join("\n")}</p>
+                  </div>
+                  <div className = "column">
+                      <p>{winLoss.join("\n")}</p>
+                  </div>
+              </div>
+          </div>
+      );
 }
 
 function Go(name) {
@@ -244,52 +255,6 @@ function Hangman() {
   useEffect(() => {
     ch_join(setState, "1");
   });
-
-  // function GameWon(props) {
-  //   let winner = "";
-  //   let guesses = 0;
-  //   for (let i = 0; i < state["view"].length; i++) {
-  //         if (state["view"][i].includes("4B")) {
-  //             winner = state["view"][i].split(/\r?\n/)[0];
-  //         }
-  //   }
-  //     for (const [key, value] of Object.entries(state["guesses"])) {
-  //         if (key === winner) {
-  //             guesses = value.length;
-  //         }
-  //     }
-  //   let {reset} = props;
-  //     return (
-  //       <div className="row">
-  //         <div className="column">
-  //           <h1>{winner} won in {guesses} guesses!</h1>
-  //           <p>
-  //           <button onClick={reset}>
-  //                           Reset
-  //           </button>
-  //           </p>
-  //         </div>
-  //       </div>
-  //     );
-  // }
-
-  // function gameIsWon() {
-  //     for (let i = 0; i < state["view"].length; i++) {
-  //         if (state["view"][i].includes("4B")) {
-  //             return true;
-  //         }
-  //     }
-  //     return false;
-  // }
-
-  // function gameIsLost() {
-  //     for (const [_, value] of Object.entries(state["guesses"])) {
-  //         if (value.length > 7) {
-  //             return true;
-  //         }
-  //     }
-  //     return false;
-  // }
 
   let body = null;
 
